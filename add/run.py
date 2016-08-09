@@ -28,7 +28,7 @@ from urllib import parse
 from wsgiref.simple_server import make_server
 
 EXEC = sys.executable
-PORT = 39093
+PORT = 80
 HOST = 'local.liaoxuefeng.com:%d' % PORT
 TEMP = tempfile.mkdtemp(suffix='_py', prefix='learn_python_')
 INDEX = 0
@@ -60,7 +60,7 @@ def application(environ, start_response):
     host = environ.get('HTTP_HOST')
     method = environ.get('REQUEST_METHOD')
     path = environ.get('PATH_INFO')
-    if method == 'GET' and path == '/':
+    if method == 'GET' and path == '/py':
         start_response('200 OK', [('Content-Type', 'text/html')])
         return [b'<html><head><title>Learning Python</title></head><body><form method="post" action="/run"><textarea name="code" style="width:90%;height: 600px"></textarea><p><button type="submit">Run</button></p></form></body></html>']
     if method == 'GET' and path == '/env':
