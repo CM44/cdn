@@ -1,10 +1,30 @@
+# encoding: utf-8
 
 from flask import Flask
 from flask import request
-from werkzeug import secure_filename
 from flask import render_template_string
 from werkzeug.contrib.fixers import ProxyFix
-import os, sys, subprocess, tempfile
+import os, sys, subprocess, tempfile, time, signal
+
+
+def check_output(*popenargs, **kwargs):
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    t = 0
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output = ''
+    while (t<30) and (process.poll() is None):
+        t +=1
+        time.sleep(1)
+        output += process.stdout.readline()
+    output += process.stdout.read()
+    if t==30:
+        os.kill(process.pid, signal.SIGKILL)
+        os.waitpid(-1, os.WNOHANG)
+        output += '\nreturen code: timeout'
+        return output
+    output += '\nreturen code:', process.returncode
+    return output
 
 def write_py(code):
     temp = tempfile.NamedTemporaryFile().name+'.py'
@@ -26,23 +46,17 @@ def index():
     return "Hi."
 @app.route('/py')
 def py():
-    return '<html><head><title>Learning Python</title></head><body><form method="post" action="/run"><textarea name="code" style="width:90%;height: 600px"></textarea><p><button type="submit">Run</button></p></form></body></html>'
-@app.route('/env')
-def env():
-    L = [b'<html><head><title>ENV</title></head><body>']
-    for k, v in environ.items():
-        p = '<p>%s = %s' % (k, str(v))
-        L.append(p.encode('utf-8'))
-    L.append(b'</html>')
-    return L
-@app.route('/py3', methods=['POST'])
+    return '<html><head><title>Learning Python</title></head><body><form method="post" action="/py2"><textarea name="code" style="width:90%;height: 600px"></textarea><p><button type="submit">Run</button></p></form></body></html>'
+
+@app.route('/py2', methods=['POST'])
 def py3():
     code = request.form['code']
     fpath = '';
     ret = 'Execute done.\n';
     try:
         fpath = write_py(code)
-        ret += decode(subprocess.check_output([sys.executable, fpath], stderr=subprocess.STDOUT))
+        ret += decode(check_output([sys.executable, fpath], stderr=subprocess.STDOUT))
+
     except subprocess.CalledProcessError as e:
         ret += 'Error: CalledProcessError\n' + decode(e.output)
     finally:
@@ -53,3 +67,8 @@ def py3():
 app.wsgi_app = ProxyFix(app.wsgi_app)
 if __name__ == '__main__':
     app.run()
+
+
+
+
+
