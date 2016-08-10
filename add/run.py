@@ -23,7 +23,7 @@ def check_output(*popenargs, **kwargs):
         os.waitpid(-1, os.WNOHANG)
         output += '\nreturen code: timeout'
         return output
-    output += '\nreturen code:', process.returncode
+    output += '\nreturen code: ' + str(process.returncode)
     return output
 
 def write_py(code):
@@ -51,8 +51,8 @@ def py():
 @app.route('/py2', methods=['POST'])
 def py2():
     code = request.form['code']
-    fpath = '';
-    ret = 'Execute done.\n';
+    fpath = ''
+    ret = ''
     try:
         fpath = write_py(code)
         ret += decode(check_output([sys.executable, fpath], stderr=subprocess.STDOUT))
@@ -61,7 +61,7 @@ def py2():
         ret += 'Error: CalledProcessError\n' + decode(e.output)
     finally:
         os.remove(fpath)
-    return ret;
+    return ret.replace('\n','<br>')
 
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
