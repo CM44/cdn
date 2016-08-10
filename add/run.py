@@ -61,7 +61,7 @@ def py2():
         ret += 'Error: CalledProcessError\n' + decode(e.output)
     finally:
         os.remove(fpath)
-    return ret.replace('\n','<br>')
+    return '<PRE>'+ret.replace('\n','<br>')+'</PRE>'
 
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
