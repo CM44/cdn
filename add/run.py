@@ -1,5 +1,7 @@
 
 from flask import Flask
+from flask import request
+from werkzeug import secure_filename
 from flask import render_template_string
 from werkzeug.contrib.fixers import ProxyFix
 import os, sys, subprocess, tempfile
@@ -33,8 +35,8 @@ def env():
         L.append(p.encode('utf-8'))
     L.append(b'</html>')
     return L
-@app.route('/run', methods=['POST'])
-def run():
+@app.route('/py3', methods=['POST'])
+def py3():
     code = request.form['code']
     fpath = '';
     ret = 'Execute done.\n';
