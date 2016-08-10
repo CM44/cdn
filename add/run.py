@@ -49,7 +49,7 @@ def py():
     return '<html><head><title>Learning Python</title></head><body><form method="post" action="/py2"><textarea name="code" style="width:90%;height: 600px"></textarea><p><button type="submit">Run</button></p></form></body></html>'
 
 @app.route('/py2', methods=['POST'])
-def py3():
+def py2():
     code = request.form['code']
     fpath = '';
     ret = 'Execute done.\n';
