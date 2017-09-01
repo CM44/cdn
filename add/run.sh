@@ -62,6 +62,6 @@ nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUT
 #exec ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG}
 
 echo "Starting Kcptun for Shadowsocks-libev..."
-nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
-#exec kcp-server -c ${KCPTUN_SS_CONF}
+#nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
+exec kcp-server -c ${KCPTUN_SS_CONF}
 
