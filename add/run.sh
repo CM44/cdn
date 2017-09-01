@@ -1,6 +1,9 @@
 #!/bin/bash
-export KCPTUN_SS_CONF="/usr/local/conf/kcptun_ss_config.json"
+
 export SS_CONF="/usr/local/conf/ss_config.json"
+export KCPTUN_SS_CONF="/usr/local/conf/kcptun_ss_config.json"
+export XKCPTUN_SS_CONF="/usr/local/conf/xkcptun_ss_config.json"
+
 # ======= SS CONFIG ======
 export SS_SERVER_ADDR=${SS_SERVER_ADDR:-0.0.0.0}                     #"server": "0.0.0.0",
 export SS_SERVER_PORT=${SS_SERVER_PORT:-8388}                        #"server_port": 8388,
@@ -16,6 +19,11 @@ export KCPTUN_SS_LISTEN=${KCPTUN_SS_LISTEN:-29900}                   #"listen": 
 export KCPTUN_KEY=${KCPTUN_KEY:-iampassword}                         #"key": "iampassword",
 export KCPTUN_CRYPT=${KCPTUN_CRYPT:-aes}                             #"crypt": "aes",
 export KCPTUN_MODE=${KCPTUN_MODE:-fast2}                             #"mode": "fast2",
+# ======= XKCPTUN CONFIG ======
+export XKCPTUN_SS_LISTEN=${XKCPTUN_SS_LISTEN:-29901}                 #"listen": ":29901"
+export XKCPTUN_KEY=${XKCPTUN_KEY:-iampassword}                       #"key": "iampassword",
+export XKCPTUN_CRYPT=${XKCPTUN_CRYPT:-none}                          #"crypt": "none",
+export XKCPTUN_MODE=${XKCPTUN_MODE:-fast2}                           #"mode": "fast2",
 
 
 [ ! -f ${SS_CONF} ] && cat > ${SS_CONF}<<-EOF
@@ -46,6 +54,7 @@ else
 fi
 
 
+
 [ ! -f ${KCPTUN_SS_CONF} ] && cat > ${KCPTUN_SS_CONF}<<-EOF
 {
     "listen": ":${KCPTUN_SS_LISTEN}",
@@ -57,11 +66,35 @@ fi
 EOF
 
 
+
+[ ! -f ${XKCPTUN_SS_CONF} ] && cat > ${XKCPTUN_SS_CONF}<<-EOF
+{
+  "localinterface": "eth0",
+  "localport": ${XKCPTUN_SS_LISTEN},
+  "remoteaddr": "127.0.0.1",
+  "remoteport": ${SS_SERVER_PORT},
+  "key": "${XKCPTUN_KEY}",
+  "crypt": "${XKCPTUN_CRYPT}",
+  "mode": "${XKCPTUN_MODE}",
+  "mtu": 1350,
+  "sndwnd": 1024,
+  "rcvwnd": 1024,
+  "nodelay": 0
+}
+EOF
+
+
+
 echo "Starting Shadowsocks-libev..."
 nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
 #exec ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG}
 
+echo "Starting xKcptun for Shadowsocks-libev..."
+#nohup xkcp_server -d 0 -c ${XKCPTUN_SS_CONF} >/dev/null 2>&1 &
+exec xkcp_server -c ${XKCPTUN_SS_CONF} -d 0
+
 echo "Starting Kcptun for Shadowsocks-libev..."
 #nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
 exec kcp-server -c ${KCPTUN_SS_CONF}
+
 
