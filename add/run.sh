@@ -29,17 +29,17 @@ export KCPTUN_MODE=${KCPTUN_MODE:-fast2}                             #"mode": "f
     "method":"${SS_METHOD}"
 }
 EOF
-if [[ "${SS_UDP}" =~ ^[Tt][Rr][Uu][Ee]|[Yy][Ee][Ss]|1|[Ee][Nn][Aa][Bb][Ll][Ee]$ ]]; then
+if [[ "${SS_UDP}" = "true" ]]; then
     export SS_UDP_FLAG="-u "
 else
     export SS_UDP_FLAG=""
 fi
-if [[ "${SS_ONETIME_AUTH}" =~ ^[Tt][Rr][Uu][Ee]|[Yy][Ee][Ss]|1|[Ee][Nn][Aa][Bb][Ll][Ee]$ ]]; then
+if [[ "${SS_ONETIME_AUTH}" = "true" ]]; then
     export SS_ONETIME_AUTH_FLAG="-A "
 else
     export SS_ONETIME_AUTH_FLAG=""
 fi
-if [[ "${SS_FAST_OPEN}" =~ ^[Tt][Rr][Uu][Ee]|[Yy][Ee][Ss]|1|[Ee][Nn][Aa][Bb][Ll][Ee]$ ]]; then
+if [[ "${SS_FAST_OPEN}" = "true" ]]; then
     export SS_FAST_OPEN_FLAG="--fast-open"
 else
     export SS_FAST_OPEN_FLAG=""
@@ -57,11 +57,11 @@ fi
 EOF
 
 
-echo "Starting Kcptun for Shadowsocks-libev..."
-#nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
-exec kcp-server -c ${KCPTUN_SS_CONF}
-
 echo "Starting Shadowsocks-libev..."
-#nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
-exec ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG}
+nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
+#exec ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG}
+
+echo "Starting Kcptun for Shadowsocks-libev..."
+nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
+#exec kcp-server -c ${KCPTUN_SS_CONF}
 
