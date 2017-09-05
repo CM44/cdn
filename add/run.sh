@@ -85,17 +85,18 @@ export MY_ETH=`ifconfig | grep Ethernet | awk '{print $1}'`
 EOF
 
 
-
+# Install sshd
 if [ "${AUTHORIZED_KEYS}x" = "x" ]; then
     echo "ERROR: You need to supply AUTHORIZED_KEYS environment variable!"
     exit 1
 else
+    apk add --no-cache openssh
+    ssh-keygen -A
     echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
     mkdir /var/run/sshd
     mkdir -p /root/.ssh/
     echo ${AUTHORIZED_KEYS} > /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
-    ssh-keygen -A
 fi
 
 
