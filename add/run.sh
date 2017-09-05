@@ -89,7 +89,6 @@ EOF
 if [ "${AUTHORIZED_KEYS}x" = "x" ]; then
   echo "ERROR: You need to supply AUTHORIZED_KEYS environment variable!"
   exit 1
-fi
 else
   echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
   mkdir /var/run/sshd
