@@ -91,11 +91,12 @@ if [ "${AUTHORIZED_KEYS}x" != "x" ]; then
 fi
 
 
-echo "Starting xKcp..."
-exec xkcp_server -c ${XKCPTUN_SS_CONF} -d 0
+echo "Starting ss..."
+nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
 
 echo "Starting Kcp..."
 nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
 
-echo "Starting ss..."
-nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
+echo "Starting xKcp..."
+exec xkcp_server -c ${XKCPTUN_SS_CONF} -d 0
+
