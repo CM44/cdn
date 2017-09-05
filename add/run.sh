@@ -92,9 +92,9 @@ if [ "${AUTHORIZED_KEYS}x" = "x" ]; then
 else
     apk add --no-cache openssh
     ssh-keygen -A
-    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
     mkdir /var/run/sshd
     mkdir -p /root/.ssh/
+    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
     echo ${AUTHORIZED_KEYS} > /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
 fi
@@ -107,8 +107,8 @@ nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUT
 #exec xkcp_server -c ${XKCPTUN_SS_CONF} -d 0
 
 echo "Starting Kcptun for Shadowsocks-libev..."
-#nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
-exec kcp-server -c ${KCPTUN_SS_CONF}
+nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
+#exec kcp-server -c ${KCPTUN_SS_CONF}
 
 echo "Starting sshd..."
 exec /usr/sbin/sshd -D
