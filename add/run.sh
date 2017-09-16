@@ -18,13 +18,13 @@ export SS_FAST_OPEN=${SS_FAST_OPEN:-true}                            #--fast-ope
 # ======= KCPTUN CONFIG ======
 export KCPTUN_SS_LISTEN=${KCPTUN_SS_LISTEN:-29900}                   #"listen": ":29900"
 export KCPTUN_KEY=${KCPTUN_KEY:-${ALL_PWD}}                          #"key": "${ALL_PWD}",
-export KCPTUN_CRYPT=${KCPTUN_CRYPT:-aes}                             #"crypt": "aes",
-export KCPTUN_MODE=${KCPTUN_MODE:-fast2}                             #"mode": "fast2",
+export KCPTUN_CRYPT=${KCPTUN_CRYPT:-none}                            #"crypt": "none",
+export KCPTUN_MODE=${KCPTUN_MODE:-fast}                              #"mode": "fast",
 # ======= XKCPTUN CONFIG ======
 export XKCPTUN_SS_LISTEN=${XKCPTUN_SS_LISTEN:-29901}                 #"listen": ":29901"
 export XKCPTUN_KEY=${XKCPTUN_KEY:-${ALL_PWD}}                        #"key": "${ALL_PWD}",
 export XKCPTUN_CRYPT=${XKCPTUN_CRYPT:-none}                          #"crypt": "none",
-export XKCPTUN_MODE=${XKCPTUN_MODE:-fast2}                           #"mode": "fast2",
+export XKCPTUN_MODE=${XKCPTUN_MODE:-fast}                            #"mode": "fast",
 
 
 [ ! -f ${SS_CONF} ] && cat > ${SS_CONF}<<-EOF
@@ -62,7 +62,11 @@ fi
     "target": "127.0.0.1:${SS_SERVER_PORT}",
     "key": "${KCPTUN_KEY}",
     "crypt": "${KCPTUN_CRYPT}",
-    "mode": "${KCPTUN_MODE}"
+    "mode": "${KCPTUN_MODE}",
+    "mtu": 1350,
+    "sndwnd": 2048,
+    "rcvwnd": 2048,
+    "nocomp": true
 }
 EOF
 
@@ -78,8 +82,8 @@ export MY_ETH=`ifconfig | grep Ethernet | awk '{print $1}'`
   "crypt": "${XKCPTUN_CRYPT}",
   "mode": "${XKCPTUN_MODE}",
   "mtu": 1350,
-  "sndwnd": 1024,
-  "rcvwnd": 1024,
+  "sndwnd": 2048,
+  "rcvwnd": 2048,
   "nodelay": 0
 }
 EOF
