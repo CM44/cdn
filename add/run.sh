@@ -152,12 +152,14 @@ EOF
 if [ ! -f "/usr/bin/v2ray/v2ray" ]; then
     mkdir /var/log/v2ray/
     mkdir /usr/bin/v2ray/
-    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/v2ray
-    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/v2ctl
-    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/geoip.dat
-    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/geosite.dat
-    chmod +x /usr/bin/v2ray/v2ctl
-    chmod +x /usr/bin/v2ray/v2ray
+    cd /usr/bin/v2ray/
+    wget https://storage.googleapis.com/v2ray-docker/v2ray
+    wget https://storage.googleapis.com/v2ray-docker/v2ctl
+    wget https://storage.googleapis.com/v2ray-docker/geoip.dat
+    wget https://storage.googleapis.com/v2ray-docker/geosite.dat
+    chmod +x ./v2ctl
+    chmod +x ./v2ray
+    cd /
 fi
 
 
