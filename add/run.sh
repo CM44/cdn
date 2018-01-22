@@ -3,6 +3,7 @@
 export SS_CONF="/usr/local/conf/ss_config.json"
 export KCPTUN_SS_CONF="/usr/local/conf/kcptun_ss_config.json"
 export XKCPTUN_SS_CONF="/usr/local/conf/xkcptun_ss_config.json"
+export V2RAY_CONF="/usr/local/conf/v2ray_config.json"
 
 export ALL_PWD=${ALL_PWD:-password}                                  #"pwd": "password",
 # ======= SS CONFIG ======
@@ -25,6 +26,139 @@ export XKCPTUN_SS_LISTEN=${XKCPTUN_SS_LISTEN:-29901}                 #"listen": 
 export XKCPTUN_KEY=${XKCPTUN_KEY:-${ALL_PWD}}                        #"key": "${ALL_PWD}",
 export XKCPTUN_CRYPT=${XKCPTUN_CRYPT:-none}                          #"crypt": "none",
 export XKCPTUN_MODE=${XKCPTUN_MODE:-fast}                            #"mode": "fast",
+# ======= V2RAY CONFIG ======
+export V2RAY_SS_LISTEN=${V2RAY_SS_LISTEN:-29902}                    #"listen": ":29902"
+export V2RAY_SS_METHOD=${V2RAY_SS_METHOD:-aes-128-cfb}              #"method":"aes-128-cfb",
+export V2RAY_SS_PASSWORD=${V2RAY_SS_PASSWORD:-${ALL_PWD}}           #"password":"${ALL_PWD}",
+export V2RAY_SS_UDP=${V2RAY_SS_UDP:-true}                           #udp support,
+export V2RAY_VMESS_LISTEN=${V2RAY_VMESS_LISTEN:-29903}              #"listen": ":29903",
+export V2RAY_VMESS_KCP_LISTEN=${V2RAY_VMESS_KCP_LISTEN:-29904}      #"listen": ":29904",
+export V2RAY_VMESS_ID1=${V2RAY_VMESS_ID1:-1}
+export V2RAY_VMESS_ID2=${V2RAY_VMESS_ID2:-2}
+
+
+[ ! -f ${V2RAY_CONF} ] && cat > ${V2RAY_CONF}<<-EOF
+{
+    "log": {
+        "access": "/var/log/v2ray/access.log",
+        "error": "/var/log/v2ray/error.log",
+        "loglevel": "error"
+    },
+    "inbound": {
+        "protocol": "shadowsocks",
+        "port": ${V2RAY_SS_LISTEN},
+        "settings": {
+            "method": "${V2RAY_SS_METHOD}",
+            "password": "${V2RAY_SS_PASSWORD}",
+            "udp": ${V2RAY_SS_UDP},
+            "level": 1
+        }
+    },
+    "outbound": {
+        "protocol": "freedom",
+        "settings": {}
+    },
+    "inboundDetour": [
+        {
+            "port": ${V2RAY_VMESS_LISTEN},
+            "protocol": "vmess",
+            "settings": {
+                "clients": [
+                    {
+                        "id": "${V2RAY_VMESS_ID1}",
+                        "level": 1,
+                        "alterId": 64
+                    },
+                    {
+                        "id": "${V2RAY_VMESS_ID2}",
+                        "level": 1,
+                        "alterId": 128
+                    }
+                ]
+            }
+        },
+        {
+            "port": ${V2RAY_VMESS_KCP_LISTEN},
+            "protocol": "vmess",
+            "settings": {
+                "clients": [
+                    {
+                        "id": "${V2RAY_VMESS_ID1}",
+                        "level": 1,
+                        "alterId": 64
+                    },
+                    {
+                        "id": "${V2RAY_VMESS_ID2}",
+                        "level": 1,
+                        "alterId": 128
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "kcp",
+                "kcpSettings": {
+                    "mtu": 1350,
+                    "tti": 50,
+                    "uplinkCapacity": 100,
+                    "downlinkCapacity": 100,
+                    "congestion": false,
+                    "readBufferSize": 2,
+                    "writeBufferSize": 2,
+                    "header": {
+                      "type": "wechat-video"
+                    }
+                  }
+            }
+        }
+    ],
+    "outboundDetour": [
+        {
+            "protocol": "blackhole",
+            "settings": {},
+            "tag": "blocked"
+        }
+    ],
+    "routing": {
+        "strategy": "rules",
+        "settings": {
+            "rules": [
+                {
+                    "type": "field",
+                    "ip": [
+                        "0.0.0.0/8",
+                        "10.0.0.0/8",
+                        "100.64.0.0/10",
+                        "127.0.0.0/8",
+                        "169.254.0.0/16",
+                        "172.16.0.0/12",
+                        "192.0.0.0/24",
+                        "192.0.2.0/24",
+                        "192.168.0.0/16",
+                        "198.18.0.0/15",
+                        "198.51.100.0/24",
+                        "203.0.113.0/24",
+                        "::1/128",
+                        "fc00::/7",
+                        "fe80::/10"
+                    ],
+                    "outboundTag": "blocked"
+                }
+            ]
+        }
+    }
+}
+EOF
+
+if [ ! -f "/usr/bin/v2ray/v2ray" ]; then
+    mkdir /var/log/v2ray/
+    mkdir /usr/bin/v2ray/
+    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/v2ray
+    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/v2ctl
+    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/geoip.dat
+    curl -sSL -O /usr/bin/v2ray/ https://storage.googleapis.com/v2ray-docker/geosite.dat
+    chmod +x /usr/bin/v2ray/v2ctl
+    chmod +x /usr/bin/v2ray/v2ray
+fi
 
 
 [ ! -f ${SS_CONF} ] && cat > ${SS_CONF}<<-EOF
@@ -94,6 +228,8 @@ if [ "${AUTHORIZED_KEYS}x" != "x" ]; then
     chmod 600 /root/.ssh/authorized_keys
 fi
 
+echo "Starting v2ray..."
+nohup v2ray -config=${V2RAY_CONF} >/dev/null 2>&1 &
 
 echo "Starting ss..."
 nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
@@ -103,4 +239,3 @@ nohup kcp-server -c ${KCPTUN_SS_CONF} >/dev/null 2>&1 &
 
 echo "Starting xKcp..."
 exec xkcp_server -c ${XKCPTUN_SS_CONF} -d 0
-
