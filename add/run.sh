@@ -231,7 +231,7 @@ if [ "${AUTHORIZED_KEYS}x" != "x" ]; then
 fi
 
 echo "Starting v2ray..."
-nohup v2ray -config=${V2RAY_CONF} >/dev/null 2>&1 &
+nohup /usr/bin/v2ray/v2ray -config=${V2RAY_CONF} >/dev/null 2>&1 &
 
 echo "Starting ss..."
 nohup ss-server -c ${SS_CONF} -d "${SS_DNS_ADDR}" ${SS_UDP_FLAG}${SS_ONETIME_AUTH_FLAG}${SS_FAST_OPEN_FLAG} >/dev/null 2>&1 &
